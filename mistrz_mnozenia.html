@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Mistrz Mnożenia!</title>
+    <style>
+        body {
+            background: #F2F8FD;
+            font-family: 'Comic Sans MS', cursive;
+            text-align: center;
+            padding: 2em;
+        }
+        .question {
+            font-size: 3em;
+            color: #2E86C1;
+            margin: 20px;
+        }
+        input {
+            font-size: 2em;
+            padding: 0.2em;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .feedback {
+            font-size: 1.5em;
+            margin: 10px;
+        }
+        .score {
+            font-size: 1.2em;
+            color: #117A65;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎯 Mistrz Mnożenia!</h1>
+<p>Masz 20 zadań. Im szybciej odpowiesz, tym więcej punktów!</p>
+<div class="question" id="question">Zaczynamy...</div>
+<input id="answer" type="number" placeholder="Wpisz wynik" autofocus />
+<div class="feedback" id="feedback"></div>
+<div class="score" id="score">Wynik: 0 pkt | Zadanie: 0/20</div>
+
+<script>
+    let score = 0;
+    let taskNr = 0;
+    const maxTasks = 20;
+    const maxPoints = 10;
+    const minPoints = 1;
+    const decayTime = 8000; // ms
+    let correctAnswer = 0;
+    let startTime = 0;
+
+    const questionEl = document.getElementById("question");
+    const feedbackEl = document.getElementById("feedback");
+    const scoreEl = document.getElementById("score");
+    const answerEl = document.getElementById("answer");
+
+    function newTask() {
+        const a = Math.floor(Math.random() * 10) + 1;
+        const b = Math.floor(Math.random() * 10) + 1;
+        correctAnswer = a * b;
+        questionEl.textContent = `${a} × ${b} = ?`;
+        feedbackEl.textContent = "";
+        answerEl.value = "";
+        answerEl.focus();
+        startTime = Date.now();
+    }
+
+    function updateScore() {
+        scoreEl.textContent = `Wynik: ${score} pkt | Zadanie: ${taskNr}/${maxTasks}`;
+    }
+
+    function checkAnswer() {
+        const userAnswer = parseInt(answerEl.value);
+        if (!isNaN(userAnswer)) {
+            const elapsed = Date.now() - startTime;
+            const possiblePoints = elapsed >= decayTime ? minPoints :
+                Math.max(minPoints, Math.round(maxPoints - ((maxPoints - minPoints) * (elapsed / decayTime))));
+            if (userAnswer === correctAnswer) {
+                score += possiblePoints;
+                feedbackEl.innerHTML = `✅ Dobrze! Zdobywasz ${possiblePoints} pkt.`;
+            } else {
+                feedbackEl.innerHTML = `❌ Zła odpowiedź. Prawidłowy wynik to ${correctAnswer}`;
+            }
+            taskNr++;
+            updateScore();
+            if (taskNr < maxTasks) {
+                setTimeout(newTask, 1000);
+            } else {
+                questionEl.textContent = "🎉 Koniec gry!";
+                answerEl.classList.add("hidden");
+                feedbackEl.innerHTML += "<br><strong>Twój końcowy wynik: " + score + " pkt!</strong>";
+            }
+        }
+    }
+
+    answerEl.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            checkAnswer();
+        }
+    });
+
+    // Start gry
+    newTask();
+    updateScore();
+</script>
+
+</body>
+</html>
